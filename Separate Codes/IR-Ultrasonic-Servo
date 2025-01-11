@@ -1,0 +1,141 @@
+unsigned int angle; // Count value of high - pertaining to the angle
+unsigned char HL;   // High Low
+unsigned long T1counts;
+unsigned long T1time;
+unsigned long Distance;
+int a;
+int ss;
+
+void myDelay_us(unsigned int);
+void myDelay_ms(unsigned int);
+
+void init_sonar(void);
+void read_sonar(void);
+
+void interrupt(void) {
+    if (PIR1 & 0x04) { // CCP1 interrupt
+       if(a==1){
+        if (HL) { // High state
+            CCPR1H = angle >> 8;
+            CCPR1L = angle;
+            HL = 0; // Switch to low state
+            CCP1CON = 0x09; // Compare mode, clear output on match
+            TMR1H = 0;
+            TMR1L = 0;
+        } else { // Low state
+            CCPR1H = (40000 - angle) >> 8; // Calculate low state duration
+            CCPR1L = (40000 - angle);
+            CCP1CON = 0x08; // Compare mode, set output on match
+            HL = 1; // Switch to high state
+            TMR1H = 0;
+            TMR1L = 0;
+        }
+         PIR1 &= 0xFB;
+         }
+        PIR1 &= 0xFB;// Clear CCP1 interrupt flag
+
+    }
+}
+
+void main() {
+
+    TRISC = 0x00; // PWM output at CCP1 (RC2)
+    PORTC = 0x00;
+    
+    TRISD = 0x30;
+    PORTD = 0x00;
+
+    TMR1H = 0;
+    TMR1L = 0;
+    TRISA = 0x00;
+    PORTA = 0x00;
+    init_sonar();              // Initialize the ultrasonic sensor
+    HL = 1; // Start with high state
+    CCP1CON = 0x08; // Compare mode, set output on match
+
+    T1CON = 0x01; // Timer1 On Fosc/4 (inc 0.5µs) with no prescaler
+
+    INTCON = 0xC0; // Enable global and peripheral interrupts
+    PIE1 |= 0x04; // Enable CCP1 interrupts
+
+    CCPR1H = 2000 >> 8; // Initial compare value for high state
+    CCPR1L = 2000;
+    ss=0;
+    while (1) {
+        //servo
+        if (PORTB & 0b00000001) { // Check if RB0 is pressed
+        if(ss==0){
+            a=1;
+            angle = 2800; // Set angle for 90° (1.25ms pulse width)
+            myDelay_ms(200);
+            a=0;
+            ss=1; }else{ss=ss;}
+        } else{ // Check if RB1 is pressed
+            if(ss){
+            a=1;
+            angle = 1000; // Set angle for 0° (0.5ms pulse width)
+            myDelay_ms(200);
+            a=0; 
+            ss=0; }else{ss=ss;}
+        }
+        //ultrasonic
+        read_sonar();
+        if (Distance < 10) {
+            PORTA = 0x0F;  // All LEDs ON if distance is less than 10 cm
+        } else if (Distance < 40) {
+            PORTA = 0x03;  // Half LEDs ON (lower 4 LEDs) if distance is 10-20 cm
+        } else {
+            PORTA = 0x00;  // All LEDs OFF if distance is greater than 20 cm
+        }
+
+        myDelay_ms(100);
+    }
+}
+void read_sonar(void) {
+     T1CON=0x10;
+    T1counts = 0;
+    T1time = 0;
+    Distance = 0;
+    TMR1H = 0;
+    TMR1L = 0;
+
+    PORTB = 0x04;          // Trigger the ultrasonic sensor (RB2 connected to trigger)
+    myDelay_us(10);           // Keep trigger for 10uS
+    PORTB = 0x00;          // Remove trigger
+
+    while (!(PORTB & 0x02));  // Wait until you start receiving the echo
+    T1CON = 0x19;          // TMR1 ON, Fosc/4 (1uS increment) with 1:2 prescaler
+    while (PORTB & 0x02);  // Wait until the pulse is received
+    T1CON = 0x18;          // TMR1 OFF, Fosc/4 (1uS increment) with 1:1 prescaler
+
+    T1counts = ((TMR1H << 8) | TMR1L);  // Get the count from Timer 1
+    T1time = T1counts;     // In microseconds
+    Distance = (T1time * 34) / (1000 * 2);  // Calculate distance in cm
+
+    // Handle unreasonable distance (e.g., too large)
+    if (Distance > 400) {
+        Distance = 0;  // Invalid distance, reset to 0
+    }
+     T1CON = 0x01;
+}
+
+void init_sonar(void) {
+    T1counts = 0;
+    T1time = 0;
+    Distance = 0;
+    TMR1H = 0;
+    TMR1L = 0;
+    TRISB = 0x03;  // RB2 for trigger, RB1 for echo, RB0 for IR
+    PORTB = 0x00;
+    T1CON = 0x10;    // TMR1 OFF, Fosc/4 (1uS increment) with 1:2 prescaler
+}
+
+void myDelay_ms(unsigned int ms) {
+    unsigned int i, j;
+    for (i = 0; i < ms; i++) {
+        for (j = 0; j < 250; j++);
+    }
+}
+void myDelay_us(unsigned int us) {
+    while (us--);
+}
