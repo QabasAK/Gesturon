@@ -75,7 +75,7 @@ void main() {
     initialization();
     ADC_Init();
     CCPPWM_init() ;
-   
+
     TMR1H = 0;
     TMR1L = 0;
 
@@ -94,8 +94,8 @@ void main() {
     while (1) {
         int xVal = ATD_read(0);  // Read x-axis
         int yVal = ATD_read(1);  // Read y-axis
-        
-        if(xVal<rightThreshold){
+
+      if(xVal<rightThreshold){
       RR=310- xVal;
       RR=RR*2;
       RR=RR+70;
@@ -178,7 +178,7 @@ void main() {
             a=1;
             angle = 1000; // Set angle for 0° (0.5ms pulse width)
             myDelay_ms(200);
-            a=0; 
+            a=0;
             ss=0; }else{ss=ss;}
         }
         //ultrasonic
@@ -200,7 +200,7 @@ void initialization(){
 
     TRISD = 0x30; //0011 0000
     PORTD = 0x00;
-    
+
     TRISB = 0x03;  // RB2 for trigger, RB1 for echo, RB0 for IR
     PORTB = 0x00;
     UART1_Init(9600);  // Initialize UART at 38600 baud rate
