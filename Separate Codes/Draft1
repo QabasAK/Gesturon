@@ -68,7 +68,16 @@ void interrupt(void) {
          }
         PIR1 &= 0xFB;// Clear CCP1 interrupt flag
 
-    }
+    }         //VM RC7 LEDS RC6 & 5
+    if (Distance < 10) {
+           PORTB |= 0x80;
+        } else if (Distance < 40) {
+          PORTB |= 0x60;
+        }
+        else{
+        PORTB = PORTB & 0b00011111;
+        }
+
 }
 
 void main() {
@@ -183,13 +192,7 @@ void main() {
         }
         //ultrasonic
         read_sonar();
-        if (Distance < 10) {
-           PORTB |= 0xF0;
-        } else if (Distance < 40) {
-          PORTB |= 0xC0;
-        } else {
-          PORTB &= 0x0F;
-        }
+
 
         myDelay_ms(100);
     }
