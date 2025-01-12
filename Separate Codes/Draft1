@@ -12,7 +12,9 @@ int RR;
 int FF;
 int BB;
 int LL;
-
+int mode;
+int xVal;
+int yVal  ;
 int serial =0;
 
 void initialization();
@@ -47,6 +49,22 @@ void init_sonar(void);
 void read_sonar(void);
 
 void interrupt(void) {
+     if(INTCON & 0x04){
+          if(PORTD&0X10){
+           mode=1;
+          }else{
+          mode=0;
+          }
+
+         INTCON = INTCON & 0xFB;
+
+     }
+
+
+
+
+
+
     if (PIR1 & 0x04) { // CCP1 interrupt
        if(a==1){
         if (HL) { // High state
@@ -69,14 +87,6 @@ void interrupt(void) {
         PIR1 &= 0xFB;// Clear CCP1 interrupt flag
 
     }         //VM RC7 LEDS RC6 & 5
-    if (Distance < 10) {
-           PORTB |= 0x80;
-        } else if (Distance < 40) {
-          PORTB |= 0x60;
-        }
-        else{
-        PORTB = PORTB & 0b00011111;
-        }
 
 }
 
@@ -84,6 +94,10 @@ void main() {
     initialization();
     ADC_Init();
     CCPPWM_init() ;
+
+
+OPTION_REG = 0x87; // 32.8ms overflow
+TMR0 = 0;
 
     TMR1H = 0;
     TMR1L = 0;
@@ -94,17 +108,22 @@ void main() {
 
     T1CON = 0x01; // Timer1 On Fosc/4 (inc 0.5µs) with no prescaler
 
-    INTCON = 0xC0; // Enable global and peripheral interrupts
+    INTCON = 0B11100000;   // Enable global and peripheral interrupts  and Timer0 interrupt
     PIE1 |= 0x04; // Enable CCP1 interrupts
 
     CCPR1H = 2000 >> 8; // Initial compare value for high state
     CCPR1L = 2000;
     ss=0;
     while (1) {
-        int xVal = ATD_read(0);  // Read x-axis
-        int yVal = ATD_read(1);  // Read y-axis
 
-      if(xVal<rightThreshold){
+    while(mode){
+
+
+
+    xVal = ATD_read(0);  // Read x-axis
+    yVal = ATD_read(1);  // Read y-axis
+
+    if(xVal<rightThreshold){
       RR=310- xVal;
       RR=RR*2;
       RR=RR+70;
@@ -124,27 +143,8 @@ void main() {
       BB=BB*6*(-1);
       BB=BB+70;
       }
-            if (UART1_Data_Ready()){ // Check if data is available
-            received_data = UART1_Read(); // Read the received data
-            switch (received_data) {
-                case 'F':
-                    moveForward();
-                    break;
-                case 'B':
-                    moveBackward();
-                    break;
-                case 'R':
-                    moveRight();
-                    break;
-                case 'L':
-                    moveLeft();
-                    break;
-                default:
-                    Stop();
-                    break;
-            }
-        }
-        if (xVal <= rightThreshold) {
+
+       if (xVal <= rightThreshold) {
         Stop();
                 moveRight();
                 Speed( RR);
@@ -170,12 +170,7 @@ void main() {
           Stop();
              Speed( 0);
         }
-
-
-        //Delay_ms(100);  // Delay for stability
-
-        //servo
-        if (PORTB & 0b00000001) { // Check if RB0 is pressed
+      if (PORTB & 0b00000001) { // Check if RB0 is pressed
         if(ss==0){
             a=1;
             angle = 2800; // Set angle for 90° (1.25ms pulse width)
@@ -190,15 +185,88 @@ void main() {
             a=0;
             ss=0; }else{ss=ss;}
         }
+
+       read_sonar();
+             myDelay_ms(200);
+             if(Distance<20){
+               rb5_bit=1;
+
+             }else{
+              rb5_bit=0;
+             }
+
+
+    }
+
+    while(!mode) {
+             Speed(200);
+             read_sonar();
+             myDelay_ms(200);
+             if(Distance<20){
+               rb5_bit=1;
+             }else{
+              rb5_bit=0;
+             }
+
+
+
+
+            if (UART1_Data_Ready()){ // Check if data is available
+            received_data = UART1_Read(); // Read the received data
+            switch (received_data) {
+                case 'F':
+                    moveForward();
+                    break;
+                case 'B':
+                    moveBackward();
+                    break;
+                case 'R':
+                    moveRight();
+                    break;
+                case 'L':
+                    moveLeft();
+                    break;
+                default:
+                    Stop();
+                    break;
+            }
+
+
+        }
+
+        if (PORTB & 0b00000001) { // Check if RB0 is pressed
+        if(ss==0){
+            a=1;
+            angle = 2800; // Set angle for 90° (1.25ms pulse width)
+            myDelay_ms(500);
+           a=0;
+            ss=1; }else{ss=ss;}
+        } else{ // Check if RB1 is pressed
+            if(ss){
+            a=1;
+            angle = 1000; // Set angle for 0° (0.5ms pulse width)
+            myDelay_ms(500);
+            a=0;
+            ss=0;}else{ss=ss;}
+        }
+
+          }
+
+
+
+        //Delay_ms(100);  // Delay for stability
+
+        //servo
+
         //ultrasonic
-        read_sonar();
+
 
 
         myDelay_ms(100);
     }
 }
 void initialization(){
-    TRISC = 0x80; // PWM output at CCP1 (RC2)
+    TRISC = 0b10100000; // PWM output at CCP1 (RC2)
     PORTC = 0x00;
 
     TRISD = 0x30; //0011 0000
@@ -224,19 +292,20 @@ void Speed(int p){
 
 void read_sonar(void) {
     T1CON=0x10;
+
     T1counts = 0;
     T1time = 0;
     Distance = 0;
     TMR1H = 0;
     TMR1L = 0;
 
-    PORTB = 0x04;          // Trigger the ultrasonic sensor (RB2 connected to trigger)
+    PORTC =PORTC | 0x10;          // Trigger the ultrasonic sensor (RB2 connected to trigger)
     myDelay_us(10);           // Keep trigger for 10uS
-    PORTB = 0x00;          // Remove trigger
+    PORTC =PORTC & !0X10;          // Remove trigger
 
-    while (!(PORTB & 0x02));  // Wait until you start receiving the echo
+    while (!(PORTC & 0x20));  // Wait until you start receiving the echo
     T1CON = 0x19;          // TMR1 ON, Fosc/4 (1uS increment) with 1:2 prescaler
-    while (PORTB & 0x02);  // Wait until the pulse is received
+    while (PORTC & 0x20);  // Wait until the pulse is received
     T1CON = 0x18;          // TMR1 OFF, Fosc/4 (1uS increment) with 1:1 prescaler
 
     T1counts = ((TMR1H << 8) | TMR1L);  // Get the count from Timer 1
@@ -247,6 +316,7 @@ void read_sonar(void) {
     if (Distance > 400) {
         Distance = 0;  // Invalid distance, reset to 0
     }
+
      T1CON = 0x01;
 }
 
@@ -273,7 +343,7 @@ unsigned int ATD_read(unsigned char port) {
     return ((ADRESH << 8) | ADRESL);  // Return 10-bit result
 }
 void moveForward() {
-    PORTD = PORTD | 0x05;
+    PORTD = PORTD | 0x05; //0000 0101
 
 }
 
