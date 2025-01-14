@@ -1,0 +1,12 @@
+0	1	mikroCPIC1618.exe -MSF -DBG -pP16F877A -DL -O11111114 -fo8 -N"C:\Users\walki\OneDrive\Desktop\C Embedded\MyProject.mcppi" -SP"C:\Users\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Defs\" -SP"C:\Users\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Uses\P16\" -SP"C:\Users\walki\OneDrive\Desktop\C Embedded\" -IP"C:\Users\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Uses\P16\" "MyProject.c" "__Lib_Math.mcl" "__Lib_MathDouble.mcl" "__Lib_System.mcl" "__Lib_Delays.mcl" "__Lib_UART_c67.mcl"	 
+hint: 0	1139	Available RAM: 352 [bytes], Available ROM: 8192 [bytes]	 
+diagnostics: 0	122	Compilation Started	MyProject.c
+warning: 285	1509	Generated baud rate is 9615 bps (error = 0.16 percent)	MyProject.c
+diagnostics: 387	123	Compiled Successfully	MyProject.c
+diagnostics: 0	127	All files Compiled in 62 ms	 
+hint: 0	1144	Used RAM (bytes): 44 (12%)  Free RAM (bytes): 308 (88%)	Used RAM (bytes): 44 (12%)  Free RAM (bytes): 308 (88%)
+hint: 0	1144	Used ROM (program words): 1412 (17%)  Free ROM (program words): 6780 (83%)	Used ROM (program words): 1412 (17%)  Free ROM (program words): 6780 (83%)
+diagnostics: 0	125	Project Linked Successfully	MyProject.mcppi
+diagnostics: 0	128	Linked in 16 ms	 
+diagnostics: 0	129	Project 'MyProject.mcppi' completed: 234 ms	 
+diagnostics: 0	103	Finished successfully: 14 Jan 2025, 23:51:44	MyProject.mcppi
