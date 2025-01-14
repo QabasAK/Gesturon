@@ -1,0 +1,22 @@
+main
+	initialization
+		UART1_Init
+	ADC_Init
+	CCPPWM_init
+	init_sonar
+	myDelay_ms
+	ATD_read
+	Mul_16X16_U
+	Stop
+	moveRight
+	Speed
+	moveLeft
+	moveBackward
+	moveForward
+	read_sonar
+		myDelay_us
+		Mul_32x32_U
+		Div_32x32_U
+	UART1_Data_Ready
+	UART1_Read
+interrupt
