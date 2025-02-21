@@ -21,7 +21,7 @@ The **switching** of the modes is handled by a **hardware interrupt** triggered 
 **Timer1** is used to calculate distance based on **echo pulse width** with a **40cm warning threshold** triggering LEDs and a **10cm critical threshold** triggering the vibration motor.
 
 <p align="center">
-<img src="https://github.com/user-attachments/assets/48de57ac-1350-48c9-9e45-d08298c6f062" alt="Design" width=70%>
+<img src="https://github.com/user-attachments/assets/48de57ac-1350-48c9-9e45-d08298c6f062" alt="Design" width=80%>
 </p>
 
 The current system implements both serial and parallel modes for controlling movement and interaction with sensors. A promising future enhancement involves integrating both modes into a **unified, remote gesture-controlled system using two PIC microcontrollers and two Bluetooth modules**.
