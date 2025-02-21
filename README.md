@@ -6,7 +6,7 @@ The implementation of a gesture-controlled robotic vehicle powered by the PIC16F
   Gesture recognition is achieved through a **GY-61 DXL335** accelerometer sensor embedded in a   glove.
   
  <p align="center">
-   <img src="https://github.com/user-attachments/assets/c8244c8c-2e13-49ef-935f-f20a21e2871d" alt="Gesturon">
+   <img src="https://github.com/user-attachments/assets/c8244c8c-2e13-49ef-935f-f20a21e2871d" alt="Gesturon" width=70%>
  </p>
 
 The design allows for a robust motor control with **DC Motors** controlled with an **H-Bridge Circuit** through **PWM control** and Two-Wheel Drive System powered by **3.7V lithium-ion batteries**.
@@ -21,7 +21,7 @@ The **switching** of the modes is handled by a **hardware interrupt** triggered 
 **Timer1** is used to calculate distance based on **echo pulse width** with a **40cm warning threshold** triggering LEDs and a **10cm critical threshold** triggering the vibration motor.
 
 <p align="center">
-<img src="https://github.com/user-attachments/assets/48de57ac-1350-48c9-9e45-d08298c6f062" alt="Design" width=4531 height=456>
+<img src="https://github.com/user-attachments/assets/48de57ac-1350-48c9-9e45-d08298c6f062" alt="Design" width=70%>
 </p>
 
 The current system implements both serial and parallel modes for controlling movement and interaction with sensors. A promising future enhancement involves integrating both modes into a **unified, remote gesture-controlled system using two PIC microcontrollers and two Bluetooth modules**.
